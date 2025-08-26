@@ -9,8 +9,17 @@ services:
       - POSTGRES_NON_ROOT_USER=${POSTGRES_NON_ROOT_USER}
       - POSTGRES_NON_ROOT_PASSWORD=${POSTGRES_NON_ROOT_PASSWORD}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./init-data.sh:/docker-entrypoint-initdb.d/init-data.sh
+      - type: volume
+        source: postgres_data
+        target: /var/lib/postgresql/data
+      - type: bind
+        source: ./init-data.sh
+        target: /docker-entrypoint-initdb.d/init-data.sh
+        read_only: true
+      - type: bind
+        source: ./01_initial_schema.sql
+        target: /docker-entrypoint-initdb.d/01_initial_schema.sql
+        read_only: true
     ports:
       - "5432:5432"
     healthcheck:

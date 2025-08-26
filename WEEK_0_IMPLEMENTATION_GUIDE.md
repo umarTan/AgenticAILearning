@@ -74,8 +74,38 @@ ls  # Verify all folders exist
 
 ### Step 4: Configure PostgreSQL Database
 - Set up persistent data storage
+    - Named volume `postgres_data` is already configured in `docker-compose.yml` and mounted to `/var/lib/postgresql/data`.
+    - Ensure volumes exist:
+        ```powershell
+        docker volume create postgres_data
+        docker volume create n8n_data
+        docker volume ls | findstr postgres_data
+        ```
 - Configure connection parameters
+    - Edit `n8n-docker/.env` and set:
+        - `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`
+        - `POSTGRES_NON_ROOT_USER`, `POSTGRES_NON_ROOT_PASSWORD`
+        - n8n DB envs are already wired in compose to use the non-root user.
+    - Start or restart services to apply changes:
+        ```powershell
+        cd "d:\Qaariah\AgenticAI\n8n-docker"
+        docker compose up -d
+        docker compose ps
+        ```
 - Create initial database schema
+    - The file `n8n-docker/01_initial_schema.sql` is auto-applied on first database initialization.
+    - If the DB already exists and you want to apply schema manually:
+        ```powershell
+        # Copy schema into container (one-time if needed)
+        docker cp 01_initial_schema.sql $(docker compose ps -q postgres):/01_initial_schema.sql
+        # Apply schema using non-root app user
+        docker compose exec -T postgres psql -U n8n -d n8n -f /01_initial_schema.sql
+        ```
+    - Verify tables exist:
+        ```powershell
+        docker compose exec -T postgres psql -U n8n -d n8n -c "\dt"
+        docker compose exec -T postgres psql -U n8n -d n8n -c "SELECT * FROM app_metadata;"
+        ```
 
 ### Step 5: Install Ollama + Phi-3
 - Install Ollama locally

@@ -82,6 +82,7 @@ ollama pull phi3:mini
 ### Technical Documentation
 - **postgresql-configuration.md**: Database setup, tuning, and maintenance
 - **ollama-phi3-integration.md**: AI integration patterns and examples
+ - **docker-n8n-postgres-lessons.md**: What changed in Docker, why, and how to test
 
 ### Learning Path
 - **n8n-learning-path.md**: Structured 4-week learning program
