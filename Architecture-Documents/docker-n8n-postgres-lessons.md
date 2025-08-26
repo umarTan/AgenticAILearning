@@ -293,6 +293,19 @@ docker compose exec -T postgres psql -U n8n -d n8n -f /01_initial_schema.sql
 - Log in with credentials in `.env`
 - Create a tiny workflow and save it (verifies DB persistence)
 
+## 📊 Performance Monitoring
+
+### Resource Usage
+```powershell
+# Monitor Docker resource usage
+docker stats
+
+# Check disk usage
+docker system df
+
+# Clean up unused resources
+docker system prune -f
+```
 ---
 
 ## 6) Troubleshooting Quick Wins

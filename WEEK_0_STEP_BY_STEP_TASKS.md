@@ -83,19 +83,63 @@ ollama list
 ```
 
 ### Task 7: Test AI Integration in n8n
-1. **Create new workflow** in n8n
-2. **Add HTTP Request node** configured for Ollama:
-   - Method: POST
-   - URL: `http://host.docker.internal:11434/api/generate`
-   - Body:
-     ```json
-     {
-       "model": "phi3:mini",
-       "prompt": "Hello, how are you?",
-       "stream": false
-     }
-     ```
-3. **Execute workflow** to test AI response
+
+Follow these steps to call your local Ollama server from n8n and verify the AI response end-to-end.
+
+1) Prerequisites (on Windows host)
+```powershell
+# Ollama service responding?
+Test-NetConnection -ComputerName localhost -Port 11434
+
+# Ensure model is available
+ollama list
+# If not present, install (one-time)
+ollama pull phi3:mini
+```
+
+2) Create a new workflow in n8n
+- Open http://localhost:5678
+- Click New → Add node → “HTTP Request”
+
+3) Configure HTTP Request node (Ollama Generate)
+- Method: POST
+- URL: http://host.docker.internal:11434/api/generate
+- Headers:
+  - Content-Type: application/json
+- Body (JSON):
+```json
+{
+  "model": "phi3:mini",
+  "prompt": "Say hi in one short sentence.",
+  "stream": false
+}
+```
+- Send: Body
+- Response: JSON
+
+4) Execute the node
+- Click “Execute node” and wait for the result pane.
+- Expected: A JSON object containing fields like `response`, `model`, and timing information. The `response` should be a short greeting.
+
+5) Optional: Store result for later use
+- Add a “Set” node after the HTTP node to pick `response` into a field such as `ai_message`.
+- Or add a “Postgres” node to insert the response into the `lead_enrichment` table (if you applied the optional schema).
+
+6) Troubleshooting tips
+- Connection refused from n8n: Ensure Docker Desktop is running and `host.docker.internal:11434` works from inside Docker. You can test from a one-off container:
+  ```powershell
+  docker run --rm --network n8n_network curlimages/curl:8.9.1 -s http://host.docker.internal:11434/api/version
+  ```
+- Model not found: Run `ollama pull phi3:mini` then retry the node.
+- Empty/long responses: Add options in body (e.g., `"temperature": 0.3`, `"max_tokens": 100`) to control style/length:
+  ```json
+  {
+    "model": "phi3:mini",
+    "prompt": "Summarize this in one sentence: Hello, how are you?",
+    "stream": false,
+    "options": { "temperature": 0.3, "num_predict": 100 }
+  }
+  ```
 
 ### Task 8: Create GitHub Repository
 ```powershell
